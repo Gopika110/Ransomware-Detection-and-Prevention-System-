@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Shield - Threat Detection Center</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .affected-list {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background-color: rgba(10, 17, 32, 0.4);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            max-height: 100px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+        .affected-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 3px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .affected-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-layout">
+        
+        <main class="main-content" data-page-title="Security Incident Control">
+            <div class="content-body">
+                
+                <div class="card">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                            Threat Logs & Actions Registry
+                        </h3>
+                        <button id="btn-refresh" class="btn btn-sm">Refresh Incidents</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Incident / Threat Pattern</th>
+                                    <th>Severity</th>
+                                    <th>Detection Time</th>
+                                    <th>Containment Status</th>
+                                    <th>Impact Scope (Files Affected)</th>
+                                    <th style="text-align: right;">Mitigation Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="threats-table-body">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--text-muted);">Fetching threat registry...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Load scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const refreshBtn = document.getElementById('btn-refresh');
+
+            // Load threats
+            loadThreats();
+
+            refreshBtn.addEventListener('click', () => {
+                loadThreats();
+            });
+
+            // Poll for threats changes
+            setInterval(loadThreats, 3000);
+        });
+
+        async function loadThreats() {
+            try {
+                const threats = await API.threats.getAll();
+                renderThreats(threats);
+            } catch (err) {
+                console.error("Failed to load threats:", err);
+            }
+        }
+
+        function renderThreats(threats) {
+            const tbody = document.getElementById('threats-table-body');
+            if (threats.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px 0;">No security threats logged. System is operating normally.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = threats.map(threat => {
+                let badgeClass = 'level-low';
+                if (threat.level === 'MEDIUM') badgeClass = 'level-medium';
+                if (threat.level === 'HIGH') badgeClass = 'level-high';
+                if (threat.level === 'CRITICAL') badgeClass = 'level-critical';
+
+                let statusClass = 'status-resolved';
+                if (threat.status === 'DETECTED') statusClass = 'status-detected';
+                if (threat.status === 'BLOCKED') statusClass = 'status-blocked';
+
+                const time = threat.detectionTime ? threat.detectionTime.replace('T', ' ').substring(0, 19) : 'Just Now';
+                
+                // Parse affected files string
+                let affectedHtml = 'No file info';
+                if (threat.affectedFiles) {
+                    const filesList = threat.affectedFiles.split(', ');
+                    affectedHtml = `
+                        <div class="affected-list">
+                            ${filesList.map(f => {
+                                const nameOnly = f.substring(f.lastIndexOf('\\') + 1) || f;
+                                return `<div class="affected-item" title="${f}">${nameOnly}</div>`;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+
+                // Action buttons based on state
+                let actionsHtml = '';
+                if (threat.status !== 'RESOLVED') {
+                    actionsHtml = `
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            ${threat.status === 'DETECTED' ? `
+                                <button onclick="blockThreat(${threat.id})" class="btn btn-sm btn-danger">
+                                    Isolate Process
+                                </button>
+                            ` : ''}
+                            <button onclick="resolveThreat(${threat.id})" class="btn btn-sm" style="border-color: var(--color-safe); color: var(--color-safe);">
+                                Mark Resolved
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    actionsHtml = `<span style="color: var(--text-muted); font-size:12px; display:block; text-align:right; font-style:italic;">Mitigation Complete</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td style="font-weight: 600; font-size:13px; max-width: 250px;">
+                            ${threat.name}
+                        </td>
+                        <td><span class="badge ${badgeClass}">${threat.level}</span></td>
+                        <td style="color: var(--text-secondary); font-family: monospace; font-size:12px;">${time}</td>
+                        <td><span class="badge ${statusClass}">${threat.status}</span></td>
+                        <td style="width: 250px;">${affectedHtml}</td>
+                        <td>${actionsHtml}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function resolveThreat(id) {
+            if (!confirm(`Are you sure you want to mark Threat ID ${id} as resolved?`)) return;
+            try {
+                await API.threats.resolve(id);
+                loadThreats();
+            } catch (err) {
+                alert("Failed to resolve threat: " + err.message);
+            }
+        }
+
+        async function blockThreat(id) {
+            if (!confirm(`Are you sure you want to isolate/block file access for Threat ID ${id}?`)) return;
+            try {
+                await API.threats.block(id);
+                loadThreats();
+            } catch (err) {
+                alert("Failed to block threat: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

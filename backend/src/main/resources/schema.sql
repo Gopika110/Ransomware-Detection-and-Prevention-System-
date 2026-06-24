@@ -1,0 +1,51 @@
+DROP TABLE IF EXISTS reports;
+DROP TABLE IF EXISTS threats;
+DROP TABLE IF EXISTS alerts;
+DROP TABLE IF EXISTS file_logs;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE file_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(512) NOT NULL,
+    activity_type VARCHAR(20) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    file_size BIGINT,
+    entropy DOUBLE,
+    is_suspicious BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE alerts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    message VARCHAR(512) NOT NULL,
+    severity VARCHAR(20) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE threats (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    level VARCHAR(20) NOT NULL,
+    detection_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL,
+    affected_files TEXT
+);
+
+CREATE TABLE reports (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    threats_count INT DEFAULT 0,
+    alerts_count INT DEFAULT 0,
+    logs_count INT DEFAULT 0,
+    summary TEXT
+);

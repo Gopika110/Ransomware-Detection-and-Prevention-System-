@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Shield - Security Settings</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app-layout">
+        
+        <main class="main-content" data-page-title="System Configurations">
+            <div class="content-body">
+                
+                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+                    
+                    <!-- Left: Scan and Threshold Settings -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="card">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                                    Scanner Threshold Settings
+                                </h3>
+                            </div>
+                            
+                            <form id="settings-form">
+                                <div class="form-group">
+                                    <label for="monitored-path">Monitored Directory Target Path</label>
+                                    <input type="text" id="monitored-path" class="form-control" placeholder="./monitored_directory" required>
+                                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Restart of watcher is managed automatically on change.</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="entropy-threshold">Entropy Threshold (File Encryption Check)</label>
+                                    <div style="display: flex; align-items: center; gap: 16px;">
+                                        <input type="range" id="entropy-threshold" min="3.0" max="8.0" step="0.1" class="form-control" style="flex-grow: 1; padding:0; height:8px;" oninput="this.nextElementSibling.value = this.value">
+                                        <output style="font-family: monospace; font-size:14px; font-weight:600; width:30px;">7.0</output>
+                                    </div>
+                                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Files with higher Shannon entropy indicate packed/encrypted bytes (Max: 8.0).</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="frequency-threshold">Frequency Alert Limit (Max Operations)</label>
+                                    <input type="number" id="frequency-threshold" class="form-control" min="2" max="100" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="time-window">Sliding Observation Time Window (Seconds)</label>
+                                    <input type="number" id="time-window" class="form-control" min="1" max="60" required>
+                                </div>
+
+                                <div style="margin-top: 24px;">
+                                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                                        Commit Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right: Policy & Connection Settings -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="card">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                                    Containment & Mitigation Policies
+                                </h3>
+                            </div>
+
+                            <div class="form-toggle">
+                                <div>
+                                    <div style="font-size: 14px; font-weight:600; color:#fff;">Scanner Monitoring Status</div>
+                                    <div style="font-size: 11px; color:var(--text-secondary); margin-top:2px;">Enable or disable real-time directory polling scans.</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-monitor">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="form-toggle" style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 10px;">
+                                <div>
+                                    <div style="font-size: 14px; font-weight:600; color:#fff;">Automatic Incident Mitigation</div>
+                                    <div style="font-size: 11px; color:var(--text-secondary); margin-top:2px;">Instantly block file access or isolate suspicious client entities.</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-block">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.228a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364l1.757 1.757" /></svg>
+                                    Backend Service Connectivity
+                                </h3>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="api-url">Backend REST API Server URL</label>
+                                <div style="display: flex; gap: 12px;">
+                                    <input type="text" id="api-url" class="form-control" placeholder="http://localhost:8080">
+                                    <button id="btn-save-api-url" class="btn btn-primary" style="white-space: nowrap;">
+                                        Link Server
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="api-link-status" style="display:none; font-size:11px; text-align:right; font-family:var(--font-mono); color:var(--color-safe);">Connected. Status Ok.</div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Load scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('settings-form');
+            const toggleMonitor = document.getElementById('toggle-monitor');
+            const toggleBlock = document.getElementById('toggle-block');
+            const apiUrlInput = document.getElementById('api-url');
+            const saveApiBtn = document.getElementById('btn-save-api-url');
+            const apiLinkStatus = document.getElementById('api-link-status');
+
+            // Load settings
+            loadSettings();
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const updated = {
+                    monitoredPath: document.getElementById('monitored-path').value,
+                    entropyThreshold: parseFloat(document.getElementById('entropy-threshold').value),
+                    frequencyThreshold: parseInt(document.getElementById('frequency-threshold').value),
+                    timeWindowSeconds: parseInt(document.getElementById('time-window').value),
+                    monitoringActive: toggleMonitor.checked,
+                    blockModeActive: toggleBlock.checked
+                };
+
+                try {
+                    await API.settings.update(updated);
+                    alert("Scanner settings updated successfully!");
+                    loadSettings();
+                } catch (err) {
+                    alert("Failed to update scanner: " + err.message);
+                }
+            });
+
+            // Toggles automatic commit on change
+            toggleMonitor.addEventListener('change', commitToggleSettings);
+            toggleBlock.addEventListener('change', commitToggleSettings);
+
+            // API Link Configuration
+            apiUrlInput.value = localStorage.getItem('backend_api_url') || 'http://localhost:8080';
+            saveApiBtn.addEventListener('click', () => {
+                const url = apiUrlInput.value.trim();
+                if (url) {
+                    localStorage.setItem('backend_api_url', url);
+                    apiLinkStatus.style.display = 'block';
+                    apiLinkStatus.textContent = 'API endpoint linked! Re-polling status...';
+                    setTimeout(() => {
+                        apiLinkStatus.style.display = 'none';
+                        window.location.reload();
+                    }, 1000);
+                }
+            });
+        });
+
+        async function loadSettings() {
+            try {
+                const config = await API.settings.get();
+                
+                document.getElementById('monitored-path').value = config.monitoredPath;
+                document.getElementById('entropy-threshold').value = config.entropyThreshold;
+                document.getElementById('entropy-threshold').nextElementSibling.value = config.entropyThreshold;
+                document.getElementById('frequency-threshold').value = config.frequencyThreshold;
+                document.getElementById('time-window').value = config.timeWindowSeconds;
+                
+                document.getElementById('toggle-monitor').checked = config.monitoringActive;
+                document.getElementById('toggle-block').checked = config.blockModeActive;
+            } catch (err) {
+                console.error("Failed to load settings:", err);
+            }
+        }
+
+        async function commitToggleSettings() {
+            const updated = {
+                monitoredPath: document.getElementById('monitored-path').value,
+                entropyThreshold: parseFloat(document.getElementById('entropy-threshold').value),
+                frequencyThreshold: parseInt(document.getElementById('frequency-threshold').value),
+                timeWindowSeconds: parseInt(document.getElementById('time-window').value),
+                monitoringActive: document.getElementById('toggle-monitor').checked,
+                blockModeActive: document.getElementById('toggle-block').checked
+            };
+
+            try {
+                await API.settings.update(updated);
+                // Silence update without alerts for toggles
+            } catch (err) {
+                console.error("Failed to commit toggles:", err);
+            }
+        }
+    </script>
+</body>
+</html>
