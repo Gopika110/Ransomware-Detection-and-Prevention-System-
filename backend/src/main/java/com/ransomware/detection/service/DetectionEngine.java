@@ -52,9 +52,10 @@ public class DetectionEngine {
         if (suspiciousByExtension || suspiciousByEntropy) {
             fileLog.setIsSuspicious(true);
             fileLogRepository.save(fileLog); // Update log as suspicious
-            
+
             // Create Alert for suspicious file activity
-            String reason = suspiciousByExtension ? "suspicious extension" : "high entropy (" + String.format("%.2f", fileLog.getEntropy()) + ")";
+            String reason = suspiciousByExtension ? "suspicious extension"
+                    : "high entropy (" + String.format("%.2f", fileLog.getEntropy()) + ")";
             createAlert("Suspicious activity detected on " + fileLog.getFileName() + " due to " + reason, "WARNING");
         }
 
@@ -99,25 +100,26 @@ public class DetectionEngine {
 
     private boolean isSuspiciousExtension(String fileName) {
         String name = fileName.toLowerCase();
-        return name.endsWith(".locked") || 
-               name.endsWith(".crypto") || 
-               name.endsWith(".ransom") || 
-               name.endsWith(".enc") ||
-               name.endsWith(".locky") ||
-               name.endsWith(".wannacry");
+        return name.endsWith(".locked") ||
+                name.endsWith(".crypto") ||
+                name.endsWith(".ransom") ||
+                name.endsWith(".enc") ||
+                name.endsWith(".locky") ||
+                name.endsWith(".wannacry");
     }
 
     private void checkMassModificationPattern(FileLog currentLog) {
         LocalDateTime windowStart = LocalDateTime.now().minusSeconds(settingsService.getTimeWindowSeconds());
-        
+
         // Count recent file logs in window
         long recentChangesCount = fileLogRepository.countByTimestampAfter(windowStart);
-        
+
         if (recentChangesCount >= settingsService.getFrequencyThreshold()) {
-            // Check if there's already an active threat in the last few seconds to avoid duplication
+            // Check if there's already an active threat in the last few seconds to avoid
+            // duplication
             List<Threat> activeThreats = threatRepository.findAllByOrderByDetectionTimeDesc();
             boolean threatAlreadyLogged = false;
-            
+
             if (!activeThreats.isEmpty()) {
                 Threat latest = activeThreats.get(0);
                 if ("DETECTED".equals(latest.getStatus()) || "BLOCKED".equals(latest.getStatus())) {
@@ -135,9 +137,10 @@ public class DetectionEngine {
                 threat.setAffectedFiles(currentLog.getFilePath());
                 threatRepository.save(threat);
 
-                createAlert("CRITICAL THREAT: Mass file modifications detected! Action taken: " 
-                            + (settingsService.isBlockModeActive() ? "Process Isolated & Access Blocked." : "Logged for Review."), 
-                            "CRITICAL");
+                createAlert("CRITICAL THREAT: Mass file modifications detected! Action taken: "
+                        + (settingsService.isBlockModeActive() ? "Process Isolated & Access Blocked."
+                                : "Logged for Review."),
+                        "CRITICAL");
             } else if (settingsService.isBlockModeActive()) {
                 // Append affected files to existing threat
                 Threat latest = activeThreats.get(0);
